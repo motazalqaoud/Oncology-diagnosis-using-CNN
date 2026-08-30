@@ -1,0 +1,9 @@
+{
+  "_comment": "For HPC-class GPUs (V100 16/32GB, A100 40/80GB). Larger batch size for faster, more stable convergence.",
+  "batch_size": 128,
+  "num_workers": 8,
+  "epochs": 40,
+  "lr": 5e-4,
+  "amp": true,
+  "approx_time_per_epoch": "Estimated 15-30 sec/epoch on a V100/A100 with a 10,015-image dataset."
+}

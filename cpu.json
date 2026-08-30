@@ -1,0 +1,9 @@
+{
+  "_comment": "CPU preset -- no GPU detected. Training is functional but very slow; use this only to verify the pipeline runs end-to-end, not for a real training run.",
+  "batch_size": 8,
+  "num_workers": 2,
+  "epochs": 30,
+  "lr": 3e-4,
+  "amp": false,
+  "approx_time_per_epoch": "Depends heavily on CPU; expect tens of minutes for the full 10,015-image HAM10000 dataset. Not recommended for real training -- see the GPU presets."
+}

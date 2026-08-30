@@ -1,0 +1,9 @@
+{
+  "_comment": "For consumer/entry GPUs with 6-8GB VRAM (e.g. RTX 3060, 4060). EfficientNet-B0 is small enough that this tier is comfortable.",
+  "batch_size": 32,
+  "num_workers": 4,
+  "epochs": 30,
+  "lr": 3e-4,
+  "amp": true,
+  "approx_time_per_epoch": "Estimated 1-2 min/epoch on a 10,015-image dataset with an 8GB GPU."
+}
