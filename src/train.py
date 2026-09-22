@@ -15,6 +15,7 @@ minority-class images.
 
 import argparse
 import csv
+import json
 import os
 import time
 
@@ -33,9 +34,10 @@ def compute_class_weights(train_dataset, device):
     return torch.tensor(weights, dtype=torch.float32, device=device)
 
 
-def run_epoch(model, loader, criterion, optimizer, device, train: bool):
+def run_epoch(model, loader, criterion, optimizer, device, train: bool, scaler=None):
     model.train(mode=train)
     total_loss, correct, total = 0.0, 0, 0
+    use_amp = scaler is not None and scaler.is_enabled()
 
     torch.set_grad_enabled(train)
     for images, labels in loader:
@@ -43,11 +45,19 @@ def run_epoch(model, loader, criterion, optimizer, device, train: bool):
 
         if train:
             optimizer.zero_grad()
-        outputs = model(images)
-        loss = criterion(outputs, labels)
+
+        with torch.amp.autocast("cuda", enabled=use_amp):
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+
         if train:
-            loss.backward()
-            optimizer.step()
+            if use_amp:
+                scaler.scale(loss).backward()
+                scaler.step(optimizer)
+                scaler.update()
+            else:
+                loss.backward()
+                optimizer.step()
 
         total_loss += loss.item() * images.size(0)
         preds = outputs.argmax(dim=1)
@@ -60,16 +70,38 @@ def run_epoch(model, loader, criterion, optimizer, device, train: bool):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", required=True, help="Directory with HAM10000_metadata.csv and images")
-    parser.add_argument("--epochs", type=int, default=30)
-    parser.add_argument("--batch_size", type=int, default=32)
-    parser.add_argument("--lr", type=float, default=3e-4)
+    parser.add_argument("--config", default=None,
+                         help="Path to a JSON preset (see configs/) to set epochs/batch_size/lr/amp defaults. "
+                              "Any explicit --flag still overrides the preset's value.")
+    parser.add_argument("--epochs", type=int, default=None)
+    parser.add_argument("--batch_size", type=int, default=None)
+    parser.add_argument("--lr", type=float, default=None)
     parser.add_argument("--image_size", type=int, default=224)
     parser.add_argument("--freeze_backbone", action="store_true",
                          help="Only train the classifier head (faster, useful for a quick sanity run)")
     parser.add_argument("--output_dir", default="checkpoints")
-    parser.add_argument("--num_workers", type=int, default=4)
+    parser.add_argument("--num_workers", type=int, default=None)
     parser.add_argument("--patience", type=int, default=6, help="Early-stopping patience on val loss")
+    parser.add_argument("--amp", action="store_true", default=None,
+                         help="Use mixed precision (overrides config if set)")
     args = parser.parse_args()
+
+    # Config file supplies defaults; explicit CLI flags (checked via the None
+    # sentinel above) always win over the preset.
+    config_defaults = {"epochs": 30, "batch_size": 32, "lr": 3e-4, "num_workers": 4, "amp": False}
+    if args.config:
+        with open(args.config) as f:
+            preset = json.load(f)
+        for key in ("epochs", "batch_size", "lr", "num_workers", "amp"):
+            if key in preset:
+                config_defaults[key] = preset[key]
+        print(f"Loaded config preset: {args.config} ({preset.get('_comment', '')})")
+
+    args.epochs = args.epochs if args.epochs is not None else config_defaults["epochs"]
+    args.batch_size = args.batch_size if args.batch_size is not None else config_defaults["batch_size"]
+    args.lr = args.lr if args.lr is not None else config_defaults["lr"]
+    args.num_workers = args.num_workers if args.num_workers is not None else config_defaults["num_workers"]
+    args.amp = args.amp if args.amp is not None else config_defaults["amp"]
 
     os.makedirs(args.output_dir, exist_ok=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -96,6 +128,10 @@ def main():
     criterion = nn.CrossEntropyLoss(weight=class_weights)
     optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=3)
+    use_amp = args.amp and torch.cuda.is_available()
+    scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
+    if args.amp and not torch.cuda.is_available():
+        print("Note: --amp was requested but no GPU is available; running in full precision.")
 
     log_path = os.path.join(args.output_dir, "training_log.csv")
     with open(log_path, "w", newline="") as f:
@@ -106,8 +142,8 @@ def main():
 
     for epoch in range(1, args.epochs + 1):
         t0 = time.time()
-        train_loss, train_acc = run_epoch(model, train_loader, criterion, optimizer, device, train=True)
-        val_loss, val_acc = run_epoch(model, val_loader, criterion, optimizer, device, train=False)
+        train_loss, train_acc = run_epoch(model, train_loader, criterion, optimizer, device, train=True, scaler=scaler)
+        val_loss, val_acc = run_epoch(model, val_loader, criterion, optimizer, device, train=False, scaler=scaler)
         scheduler.step(val_loss)
         elapsed = time.time() - t0
 
