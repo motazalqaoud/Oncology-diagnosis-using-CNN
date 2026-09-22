@@ -1,15 +1,3 @@
----
-title: Oncology Diagnosis CNN
-emoji: 🔬
-colorFrom: blue
-colorTo: gray
-sdk: gradio
-sdk_version: 4.44.0
-app_file: app.py
-pinned: false
-license: mit
----
-
 # oncology-diagnosis-cnn
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://python.org)
@@ -21,7 +9,7 @@ license: mit
 > clinically-actionable metric (malignant-class sensitivity) that generic
 > accuracy numbers hide.
 
-A **CNN (Convolutional Neural Network)** — specifically EfficientNet-B0 — fine-tuned
+A **CNN (Convolutional Neural Network)** -- specifically EfficientNet-B0 -- fine-tuned
 on **HAM10000**, the standard dermatoscopic imaging benchmark for skin cancer
 diagnosis. Classifies a lesion image into one
 of seven diagnostic categories and flags the three that are malignant or
@@ -35,7 +23,7 @@ with malignant classes clearly flagged.
 Most public skin-lesion classifiers stop at "here's the accuracy." This one is
 built the way an oncology screening tool actually needs to be evaluated:
 alongside overall accuracy, it reports **sensitivity on the malignant classes
-specifically** (`evaluate.py`) — because a model that's 95% accurate overall
+specifically** (`evaluate.py`) -- because a model that's 95% accurate overall
 but misses melanomas is not a usable screening aid. It also uses **lesion-level
 stratified splitting** rather than naive random image splitting, since
 HAM10000 contains repeat photographs of the same lesion; splitting by image
@@ -45,7 +33,7 @@ and inflates reported accuracy.
 ## The dataset
 
 **HAM10000** ("Human Against Machine with 10000 training images"), Tschandl et
-al., 2018 — 10,015 dermatoscopic images across seven diagnostic categories,
+al., 2018 -- 10,015 dermatoscopic images across seven diagnostic categories,
 each label verified by histopathology, expert consensus, confocal microscopy,
 or follow-up.
 
@@ -71,7 +59,7 @@ oversampling.
 | Common tutorial | This repo |
 |---|---|
 | Random image-level train/test split | **Lesion-level** stratified split (HAM10000 has repeat photos of the same lesion; splitting by image leaks information and inflates reported accuracy) |
-| Report overall accuracy only | Report **malignant-class sensitivity, specificity, and false-negative count** — the numbers that matter for a screening tool |
+| Report overall accuracy only | Report **malignant-class sensitivity, specificity, and false-negative count** -- the numbers that matter for a screening tool |
 | Naive oversampling for imbalance | Inverse-frequency **class-weighted loss** |
 | No production path | Auto GPU-vs-CPU config presets, mixed precision, honest demo-mode fallback |
 | Accuracy only | Full 7-class report + macro ROC-AUC + binary malignant/benign confusion matrix |
@@ -82,18 +70,18 @@ Dataset citation:
 > lesions. *Sci Data* 5, 180161 (2018). https://doi.org/10.7910/DVN/DBW86T
 
 **The dataset is not bundled in this repo** (it's ~2.7GB). Download it
-yourself from the Harvard Dataverse link above — see Setup below.
+yourself from the Harvard Dataverse link above -- see Setup below.
 
 ## Architecture
 
 EfficientNet-B0 (ImageNet-pretrained) with the classification head replaced by
-a small dropout → linear → ReLU → dropout → linear stack fine-tuned on
+a small dropout -> linear -> ReLU -> dropout -> linear stack fine-tuned on
 HAM10000. This is a **classification CNN**, not a U-Net: the task here is
 "which of 7 categories is this lesion," a whole-image decision, not
 pixel-by-pixel segmentation (that's what the U-Net in
 [brain-tumor-segmentation](https://github.com/motazalqaoud/Brain-Tumor-Segmentation)
 is for). EfficientNet-B0 was chosen over heavier backbones (ResNet50,
-EfficientNet-B4+) as a practical default — it trains in a reasonable time on a
+EfficientNet-B4+) as a practical default -- it trains in a reasonable time on a
 single consumer GPU and is small enough to serve cheaply in a Hugging Face
 Space, while remaining competitive with larger architectures on this
 particular dataset once fine-tuned (see Expected Performance below).
@@ -102,20 +90,20 @@ particular dataset once fine-tuned (see Expected Performance below).
 
 ```
 oncology-diagnosis-cnn/
-├── app.py                 # Gradio demo (Hugging Face Spaces entry point)
-├── data_prep.py            # Verifies a downloaded dataset is laid out correctly
+├── app.py                     Gradio demo (Hugging Face Spaces entry point)
+├── data_prep.py                Verifies a downloaded dataset is laid out correctly
 ├── requirements.txt
 ├── configs/
-│   ├── cpu.json             # No GPU: small batch, no AMP -- pipeline verification only
-│   ├── gpu_8gb.json          # Consumer GPU (RTX 3060/4060): batch 32, AMP on
-│   └── gpu_16gb_plus.json    # HPC-class GPU (V100/A100): batch 128, AMP on
+│   ├── cpu.json                No GPU: small batch, no AMP -- pipeline verification only
+│   ├── gpu_8gb.json             Consumer GPU (RTX 3060/4060): batch 32, AMP on
+│   └── gpu_16gb_plus.json       HPC-class GPU (V100/A100): batch 128, AMP on
 ├── src/
-│   ├── dataset.py          # HAM10000Dataset, transforms, lesion-stratified split
-│   ├── model.py             # EfficientNet-B0 classifier, checkpoint loading
-│   ├── train.py              # Training loop: class-weighted loss, AMP, early stopping
-│   ├── evaluate.py           # 7-class + binary malignant/benign metrics
-│   └── predict.py            # Single-image CLI inference
-└── checkpoints/              # best_model.pth lands here after training (gitignored)
+│   ├── dataset.py               HAM10000Dataset, transforms, lesion-stratified split
+│   ├── model.py                 EfficientNet-B0 classifier, checkpoint loading
+│   ├── train.py                 Training loop: class-weighted loss, AMP, early stopping
+│   ├── evaluate.py              7-class + binary malignant/benign metrics
+│   └── predict.py               Single-image CLI inference
+└── checkpoints/                 best_model.pth lands here after training (gitignored)
 ```
 
 ## Setup
@@ -178,9 +166,9 @@ classification head.
 
 If training on an HPC cluster (SLURM) or your own NVIDIA GPU:
 
-**1. Install NVIDIA drivers** (skip on a shared HPC — already provided by the cluster)
+**1. Install NVIDIA drivers** (skip on a shared HPC -- already provided by the cluster)
 ```bash
-nvidia-smi   # verify: should show your GPU name and driver version
+nvidia-smi  # verify: should show your GPU name and driver version
 ```
 
 **2. Install PyTorch with CUDA**
@@ -203,9 +191,9 @@ the steps above, e.g.:
 #SBATCH --time=04:00:00
 module load cuda anaconda3
 ```
-(exact module names vary by cluster — check `module avail`).
+(exact module names vary by cluster -- check `module avail`).
 
-If CUDA isn't available, `train.py` automatically falls back to CPU — slower,
+If CUDA isn't available, `train.py` automatically falls back to CPU -- slower,
 but functional. Use `configs/cpu.json` in that case.
 
 ## Evaluation
@@ -217,10 +205,10 @@ python src/evaluate.py --data_dir HAM10000 --checkpoint checkpoints/best_model.p
 Reports, on the held-out test split:
 - Full 7-class precision/recall/F1 and confusion matrix
 - Macro-average ROC-AUC (one-vs-rest)
-- **Binary malignant-vs-benign sensitivity, specificity, and AUC** — the
-  clinically actionable numbers — plus the raw false-negative count (missed
-  malignant lesions), which is the single most important number to scrutinize
-  before considering any downstream use.
+- **Binary malignant-vs-benign sensitivity, specificity, and AUC** -- the
+clinically actionable numbers -- plus the raw false-negative count (missed
+malignant lesions), which is the single most important number to scrutinize
+before considering any downstream use.
 
 ## Inference on a single image
 
@@ -243,20 +231,20 @@ detect the checkpoint and switch to real predictions on next launch.
 
 ## Results
 
-**No checkpoint is bundled in this repo yet** — training requires the 2.7GB
+**No checkpoint is bundled in this repo yet** -- training requires the 2.7GB
 dataset (not included, see Setup) and real compute time. Once you train a
 model, run `src/evaluate.py` and paste the output here:
 
 | Region | Dice / Metric | Value |
 |---|---|---|
-| 7-class accuracy | — | *(run evaluate.py)* |
-| Malignant sensitivity | — | *(run evaluate.py)* |
-| Malignant specificity | — | *(run evaluate.py)* |
-| Macro ROC-AUC | — | *(run evaluate.py)* |
+| 7-class accuracy | -- | *(run evaluate.py)* |
+| Malignant sensitivity | -- | *(run evaluate.py)* |
+| Malignant specificity | -- | *(run evaluate.py)* |
+| Macro ROC-AUC | -- | *(run evaluate.py)* |
 
 **Fastest path to real numbers:** HAM10000 (2.7GB) is far smaller than the 12K
 Kaggle brain tumor set trained in
-[Brain-Tumor-Segmentation](https://github.com/motazalqaoud/Brain-Tumor-Segmentation) —
+[Brain-Tumor-Segmentation](https://github.com/motazalqaoud/Brain-Tumor-Segmentation) --
 this will train in well under an hour on any free-tier GPU notebook (Kaggle,
 Colab), no HPC queue required. Kaggle also hosts a direct HAM10000 mirror you
 can attach to a notebook without the Harvard Dataverse download.
@@ -273,7 +261,7 @@ CNNs report:
 | Multimodal (image + patient metadata) | ~94.1% | AUC 0.943 |
 
 *(See references below.)* These are reported numbers from published work on
-HAM10000, included here to set a realistic expectation range — **not**
+HAM10000, included here to set a realistic expectation range -- **not**
 results from this specific checkpoint.
 
 ## Limitations and disclaimer
@@ -314,4 +302,4 @@ dermatologist for any concerning skin lesion.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT -- see [LICENSE](LICENSE).
