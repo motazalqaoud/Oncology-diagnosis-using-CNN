@@ -21,8 +21,8 @@ from sklearn.metrics import (
     precision_recall_fscore_support,
 )
 
-from dataset import HAM10000Dataset, CLASS_NAMES, MALIGNANT_CLASSES, stratified_split
-from model import SkinLesionClassifier
+from preprocessing.dataset import HAM10000Dataset, CLASS_NAMES, MALIGNANT_CLASSES, stratified_split
+from classification.model import SkinLesionClassifier
 
 
 def main():

@@ -23,8 +23,8 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from dataset import HAM10000Dataset, CLASS_NAMES, stratified_split
-from model import SkinLesionClassifier
+from preprocessing.dataset import HAM10000Dataset, CLASS_NAMES, stratified_split
+from classification.model import SkinLesionClassifier
 
 
 def compute_class_weights(train_dataset, device):

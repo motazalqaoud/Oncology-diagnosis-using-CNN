@@ -10,8 +10,8 @@ import argparse
 import torch
 from PIL import Image
 
-from dataset import build_transforms, CLASS_NAMES, CLASS_DESCRIPTIONS, MALIGNANT_CLASSES
-from model import load_model
+from preprocessing.dataset import build_transforms, CLASS_NAMES, CLASS_DESCRIPTIONS, MALIGNANT_CLASSES
+from classification.model import load_model
 
 
 def predict(image_path: str, checkpoint_path: str, image_size: int = 224, device: str = "cpu"):
