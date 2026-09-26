@@ -111,7 +111,7 @@ oncology-diagnosis-cnn/
 │   ├── train.py                 Training loop: class-weighted loss, AMP, early stopping
 │   ├── evaluate.py              7-class + binary malignant/benign metrics
 │   └── predict.py               Single-image CLI inference
-├── results/                    Confusion matrix and training curves (real checkpoint)
+├── results/                    Confusion matrix, training curves, prediction example (real checkpoint)
 └── checkpoints/                 best_model.pth lands here after training (gitignored)
 ```
 
@@ -200,6 +200,10 @@ clearly-labeled demo mode. Train first and it will auto-detect the checkpoint.
 ![Training curves](results/training_curves.png)
 
 *Train/val loss and accuracy over 20 epochs (early-stopped at epoch 14 best val_loss, continued to epoch 20).*
+
+![Prediction example](results/prediction_example.png)
+
+*Two held-out test images with the model's actual prediction: a correctly-classified melanoma (flagged malignant) and a correctly-classified benign nevus, each with the model's confidence.*
 
 | Metric | Value |
 |---|---|
