@@ -14,8 +14,10 @@ on **HAM10000**, the standard dermatoscopic imaging benchmark for skin cancer
 diagnosis. Classifies a lesion image into one of seven diagnostic categories and
 flags the three that are malignant or pre-malignant.
 
-**Live demo:** upload a dermatoscopic image and get per-class probabilities,
-with malignant classes clearly flagged.
+**[Live demo](https://huggingface.co/spaces/motazalqaoud/skin-lesion-classifier)** --
+upload a dermatoscopic image and get per-class probabilities, with malignant
+classes clearly flagged. Runs entirely in your browser (ONNX Runtime Web), so
+the image never leaves your machine and there is no cold start.
 
 ## Why this project
 
