@@ -73,6 +73,44 @@ Dataset citation:
 **The dataset is not bundled in this repo** (it's ~2.7GB). Download it
 yourself from the Harvard Dataverse link above -- see Setup below.
 
+## How this is evaluated
+
+The architecture is a stock EfficientNet-B0 — the part worth showing is the
+evaluation path, because that is where most public skin-lesion projects quietly
+overstate themselves.
+
+```mermaid
+flowchart LR
+    A["HAM10000<br/>10,015 images · 7 classes<br/>nv alone ≈ 67%"] --> B{"Split by<br/>LESION ID<br/>not by image"}
+
+    B --> TR["Train<br/>7,055"]
+    B --> VA["Val<br/>1,475"]
+    B --> TE["Test 1,485<br/>held out"]
+
+    TR --> M["EfficientNet-B0<br/>class-weighted loss<br/>best epoch 14"]
+    VA --> M
+
+    M --> P["Evaluate on<br/>held-out test"]
+    TE --> P
+
+    P --> R1["7-class report<br/>83.1% accuracy<br/>0.9647 macro AUC"]
+    P --> R2["Collapse to<br/>malignant vs benign<br/>TP 183 · FP 71 · TN 1130"]
+
+    R2 --> FN["FN = 101 of 284<br/>sensitivity 64.4%<br/>36% of cancers missed"]
+
+    style FN fill:#d9534f,color:#fff,stroke:#a33,stroke-width:2px
+    style R2 fill:#f0ad4e,color:#3a2a00,stroke:#c08a2e
+    style B fill:#eef2f7,color:#33415c,stroke:#b8c4d4
+```
+
+Splitting by **lesion** rather than by image is the first honesty check:
+HAM10000 photographs the same lesion repeatedly, so an image-level split puts
+the same lesion on both sides and inflates accuracy.
+
+The red box is the second. A model can post 83.1% accuracy and a 0.9647 AUC
+while still missing roughly a third of the lesions that actually matter —
+aggregate metrics hide that, because benign nevi dominate the dataset.
+
 ## Architecture
 
 EfficientNet-B0 (ImageNet-pretrained) with the classification head replaced by
