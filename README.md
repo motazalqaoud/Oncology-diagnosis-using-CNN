@@ -115,6 +115,33 @@ oncology-diagnosis-cnn/
 └── checkpoints/                 best_model.pth lands here after training (gitignored)
 ```
 
+## Pretrained weights
+
+You don't have to train this yourself. The checkpoint behind every number in
+the Results section below is published:
+
+- **Hugging Face:** [`motazalqaoud/oncology-skin-lesion-weights`](https://huggingface.co/motazalqaoud/oncology-skin-lesion-weights)
+- **GitHub Release:** attached to [v1.0.0](https://github.com/motazalqaoud/Oncology-diagnosis-using-CNN/releases/tag/v1.0.0)
+
+`best_model.pth` is 16.8 MB (EfficientNet-B0, 4,379,348 parameters, best
+validation loss at epoch 14).
+
+```python
+from huggingface_hub import hf_hub_download
+import torch
+
+path = hf_hub_download("motazalqaoud/oncology-skin-lesion-weights", "best_model.pth")
+ckpt = torch.load(path, map_location="cpu")
+
+# weights live under "model_state_dict", alongside epoch/val_loss/val_acc
+state_dict = ckpt["model_state_dict"]
+```
+
+Drop it at `checkpoints/best_model.pth` and the evaluation, inference and demo
+commands below work immediately. Model card, a download CLI and a checkpoint
+verifier live in
+[open-source-model-weights](https://github.com/motazalqaoud/open-source-model-weights).
+
 ## Setup
 
 ```bash
