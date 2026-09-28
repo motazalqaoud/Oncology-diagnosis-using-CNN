@@ -1,4 +1,4 @@
-# oncology-diagnosis-cnn
+# Oncology Diagnosis using CNN
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://python.org)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-red)](https://pytorch.org)
@@ -128,7 +128,7 @@ particular dataset once fine-tuned (see Results below).
 ## Repository structure
 
 ```
-oncology-diagnosis-cnn/
+oncology-diagnosis-using-cnn/
 ├── app.py                     Gradio demo (Hugging Face Spaces entry point)
 ├── data_prep.py                Verifies a downloaded dataset is laid out correctly
 ├── requirements.txt
@@ -185,8 +185,8 @@ verifier live in
 ## Setup
 
 ```bash
-git clone https://github.com/motazalqaoud/oncology-diagnosis-cnn
-cd oncology-diagnosis-cnn
+git clone https://github.com/motazalqaoud/oncology-diagnosis-using-cnn
+cd oncology-diagnosis-using-cnn
 pip install -r requirements.txt
 ```
 
